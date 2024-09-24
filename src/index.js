@@ -2,7 +2,7 @@ const newTask = document.getElementById('new-task');
 const taskList = document.getElementById('task-list');
 const addTaskButton = document.getElementById('add-task');
 
-const addTaskToDOM = (taskText, isCompleted = false) => {
+const addTaskToDOM = (taskText, completed = false) => {
   const li = document.createElement('li');
   li.classList.add(
     'flex',
@@ -19,13 +19,16 @@ const addTaskToDOM = (taskText, isCompleted = false) => {
 
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
-  checkbox.checked = isCompleted;
+  checkbox.checked = completed;
   checkbox.classList.add('mr-2');
-  checkbox.addEventListener('change', completeTask);
+  checkbox.addEventListener('change', () => {
+    li.querySelector('span').classList.toggle('line-through', checkbox.checked);
+    saveTasks();
+  });
 
   const text = document.createElement('span');
   text.textContent = taskText;
-  if (isCompleted) {
+  if (completed) {
     text.classList.add('line-through');
   }
 
@@ -76,18 +79,14 @@ const editTask = (taskText, li) => {
   }
 };
 
-const completeTask = (event) => {
-  const task = event.target;
-  const li = task.parentElement;
-  li.classList.toggle('line-through');
-};
-
 const saveTasks = () => {
   const tasks = [];
   taskList.querySelectorAll('li').forEach((li) => {
-    const taskText = li.querySelector('span').textContent;
-    const isCompleted = li.querySelector('input[type="checkbox"]').checked;
-    tasks.push({ text: taskText, completed: isCompleted });
+    const checkbox = li.querySelector('input[type="checkbox"]');
+    tasks.push({
+      text: li.querySelector('span').textContent,
+      completed: checkbox.checked,
+    });
   });
   localStorage.setItem('tasks', JSON.stringify(tasks));
 };
