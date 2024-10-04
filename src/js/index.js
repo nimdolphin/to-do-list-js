@@ -3,75 +3,69 @@ import { TaskManager } from './taskManager.js';
 const newTaskInput = document.getElementById('new-task');
 const taskList = document.getElementById('task-list');
 const addTaskButton = document.getElementById('add-task');
+const taskTemplate = document.getElementById('task-template').content;
 
 const taskManager = new TaskManager();
 
-const renderTasks = () => {
-  taskList.innerHTML = '';
-  taskManager.tasks.forEach((task, index) => {
-    const li = document.createElement('li');
-    li.className =
-      'flex items-center justify-between bg-gray-100 p-3 mb-2 rounded';
+const renderTask = (task) => {
+  const clone = document.importNode(taskTemplate, true);
 
-    const taskContainer = document.createElement('div');
-    taskContainer.classList.add('flex', 'items-center');
+  const taskElement = clone.querySelector('li');
+  taskElement.setAttribute('data-id', task.id);
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = task.completed;
-    checkbox.classList.add('mr-2');
-    checkbox.onclick = () => {
-      taskManager.toggleTaskCompletion(index);
-      renderTasks();
-    };
+  const checkbox = clone.querySelector('input[type="checkbox"]');
+  const taskText = clone.querySelector('span');
+  const editButton = clone.querySelector('button:first-of-type');
+  const deleteButton = clone.querySelector('button:last-of-type');
 
-    const span = document.createElement('span');
-    span.innerText = task.text;
-    if (task.completed) {
-      span.classList.add('line-through');
+  checkbox.checked = task.completed;
+  taskText.innerText = task.text;
+
+  if (task.completed) {
+    taskText.classList.add('line-through');
+  } else {
+    taskText.classList.remove('line-through');
+  }
+
+  checkbox.onclick = () => {
+    taskManager.toggleTaskCompletion(task.id);
+    taskText.classList.toggle('line-through', checkbox.checked);
+  };
+
+  editButton.onclick = () => {
+    const newText = prompt('Edit task:', task.text);
+    if (newText) {
+      taskManager.tasks.find((t) => t.id === task.id).text = newText;
+      taskManager.saveTasks();
+      taskText.innerText = newText;
     }
+  };
 
-    const buttonContainer = document.createElement('div');
+  deleteButton.onclick = () => {
+    taskManager.removeTask(task.id);
+    const taskToRemove = document.querySelector(`li[data-id="${task.id}"]`);
+    if (taskToRemove) {
+      taskToRemove.remove();
+    }
+  };
 
-    const editButton = document.createElement('button');
-    editButton.innerText = 'Edit';
-    editButton.className = 'text-gray-500 mr-4 hover:text-green-700';
-    editButton.onclick = () => {
-      const newText = prompt('Edit task:', task.text);
-      if (newText) {
-        taskManager.tasks[index].text = newText;
-        taskManager.saveTasks();
-        renderTasks();
-      }
-    };
-
-    const deleteButton = document.createElement('button');
-    deleteButton.innerText = 'Delete';
-    deleteButton.className = 'text-orange-500 hover:text-red-700';
-    deleteButton.onclick = () => {
-      taskManager.removeTask(index);
-      renderTasks();
-    };
-
-    taskContainer.appendChild(checkbox);
-    taskContainer.appendChild(span);
-
-    buttonContainer.appendChild(editButton);
-    buttonContainer.appendChild(deleteButton);
-    li.appendChild(taskContainer);
-    li.appendChild(buttonContainer);
-    taskList.appendChild(li);
-  });
+  taskList.appendChild(clone);
 };
 
-renderTasks();
+const renderTasks = () => {
+  taskList.innerHTML = '';
+  taskManager.tasks.forEach((task) => {
+    renderTask(task);
+  });
+};
 
 addTaskButton.onclick = () => {
   const taskText = newTaskInput.value.trim();
   if (taskText) {
-    taskManager.addTask(taskText);
+    const newTask = taskManager.addTask(taskText);
+    renderTask(newTask);
     newTaskInput.value = '';
-    renderTasks();
+    newTaskInput.focus();
   }
 };
 
@@ -80,3 +74,5 @@ newTaskInput.addEventListener('keypress', (event) => {
     addTaskButton.click();
   }
 });
+
+renderTasks();

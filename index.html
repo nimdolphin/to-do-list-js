@@ -25,6 +25,22 @@
         </button>
       </div>
       <ul class="list-none" id="task-list"></ul>
+      <template id="task-template">
+        <li
+          class="flex items-center justify-between bg-gray-100 p-3 mb-2 rounded"
+        >
+          <div class="flex items-center">
+            <input type="checkbox" class="mr-2" />
+            <span></span>
+          </div>
+          <div>
+            <button class="text-gray-500 mr-4 hover:text-green-700">
+              Edit
+            </button>
+            <button class="text-orange-500 hover:text-red-700">Delete</button>
+          </div>
+        </li>
+      </template>
     </div>
     <script src="./src/js/index.js" type="module"></script>
   </body>

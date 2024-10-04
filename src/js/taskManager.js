@@ -8,7 +8,9 @@ export class TaskManager {
   loadTasks() {
     const tasksData = localStorage.getItem('tasks');
     return tasksData
-      ? JSON.parse(tasksData).map((task) => new Task(task.text, task.completed))
+      ? JSON.parse(tasksData).map(
+          (task) => new Task(task.text, task.completed, task.id)
+        )
       : [];
   }
 
@@ -20,15 +22,19 @@ export class TaskManager {
     const newTask = new Task(text);
     this.tasks.push(newTask);
     this.saveTasks();
+    return newTask;
   }
 
-  removeTask(index) {
-    this.tasks.splice(index, 1);
+  removeTask(id) {
+    this.tasks = this.tasks.filter((task) => task.id !== id);
     this.saveTasks();
   }
 
-  toggleTaskCompletion(index) {
-    this.tasks[index].toggleComplete();
-    this.saveTasks();
+  toggleTaskCompletion(id) {
+    const task = this.tasks.find((task) => task.id === id);
+    if (task) {
+      task.toggleComplete();
+      this.saveTasks();
+    }
   }
 }
